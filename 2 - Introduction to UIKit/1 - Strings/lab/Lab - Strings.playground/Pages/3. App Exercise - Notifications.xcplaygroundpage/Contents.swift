@@ -7,9 +7,9 @@
  
  Create `firstName` and `lastName` constants and assign them string literals representing a user's first name and last name, respectively. Create a `fullName` constant that uses string concatenation to combine `firstName` and `lastName`. Print the value of `fullName`.
  */
-let firstName = "Bob "
+let firstName = "Bob"
 let lastName = "the Builder"
-let fullName = firstName + lastName
+let fullName = firstName + " " + lastName
 
 /*:
  Occasionally users of your fitness tracking app will beat previous goals or records. You may want to notify them when this happens for encouragement purposes. Create a new constant `congratulations` and assign it a string literal that uses string interpolation to create the following string:
