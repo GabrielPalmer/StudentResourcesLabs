@@ -37,7 +37,7 @@ progressUpdate(steps: 12000, goal: 10000)
 func pacing(currentDistance: Double, totalDistance: Double, currentTime: Double, goalTime: Double) {
     
     //if your percentage of total distance traveled so far is greater than percentage of total time passed then your current pace will reach goal before or on time.
-    if currentDistance / totalDistance > currentTime / goalTime {
+    if currentDistance / totalDistance >= currentTime / goalTime {
         print("Keep it up!")
     } else {
         print("You'be got to push it just a bit harder!")
