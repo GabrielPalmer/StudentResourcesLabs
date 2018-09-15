@@ -10,15 +10,12 @@ struct User {
     
     static var currentUser = User(userName: "Gabe Palmer", email: "IdaBest@cooldudes.com", age: 17)
     
-    /*
      static func logIn(newUser user: User) {
-     userName = user.userName
-     email = user.email
-     age = user.age
+    User.currentUser = user
      
      print("\(user.userName) has been logged in.")
      }
-     */
+ 
 }
 
 
@@ -34,7 +31,7 @@ print(currentUser.age)
  
  Below, call the `logIn(user:)` method and pass in a different `User` instance than what you assigned to currentUser above. Observe the printout in the console.
  */
-currentUser.logIn(newUser: User(userName: "TheNewGuy", email: "Swagatron9000@gmail.com", age: 9))
-
+var me = User(userName: "TheNewGuy", email: "Swagatron9000@gmail.com", age: 9)
+User.logIn(newUser: me)
 
 //: [Previous](@previous)  |  page 9 of 10  |  [Next: App Exercise - Type Properties and Methods](@next)
