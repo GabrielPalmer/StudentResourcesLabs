@@ -38,7 +38,6 @@ if let pace = paces["Medium"] {
     print("Okay! I'll keep you at a \(pace) minute mile pace.")
 }
 
-
 /*:
  
  _Copyright © 2017 Apple Inc._

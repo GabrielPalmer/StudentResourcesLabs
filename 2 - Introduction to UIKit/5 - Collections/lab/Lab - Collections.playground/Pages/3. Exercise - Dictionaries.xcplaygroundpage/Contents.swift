@@ -27,8 +27,6 @@ print(daysOfMonth)
  */
 if let days = daysOfMonth["January"] {
     print("January has \(days) days.")
-} else {
-    print("Key name not found")
 }
 
 /*:
@@ -46,7 +44,8 @@ print(stuff)
 /*:
  Print the last element of `colorsArray`, accessing it through the dictionary you've created. You'll have to use if-let syntax or the bang operator to unwrap what is returned from the dictionary before you can access element of the array.
  */
-print(stuff["Colors"]![2] )
-//Don't know how to do this with if let syntax
 
+if let color = stuff["Colors"]?[2] {
+    print(color)
+}
 //: [Previous](@previous)  |  page 3 of 4  |  [Next: App Exercise - Pacing](@next)
