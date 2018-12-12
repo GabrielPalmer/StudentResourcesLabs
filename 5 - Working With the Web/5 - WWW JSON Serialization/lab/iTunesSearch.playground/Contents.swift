@@ -10,32 +10,123 @@ extension URL {
     func withQueries(_ queries: [String: String]) -> URL? {
         
         var components = URLComponents(url: self, resolvingAgainstBaseURL: true)
-        components?.queryItems = queries.flatMap { URLQueryItem(name: $0.0, value: $0.1) }
+        components?.queryItems = queries.compactMap { URLQueryItem(name: $0, value: $1) }
         return components?.url
     }
 }
 
-let baseURL = URL(string: "https://itunes.apple.com/search?")!
+struct StoreItems: Codable {
+    let results: [StoreItem]
+}
+
+struct StoreItem: Codable {
+    
+    let name: String?
+    let media: String?
+    let language: String?
+    let artist: String?
+    let description: String?
+    let coverImageURL: String?
+    
+    var printDescription: String {
+        var stuff: String = ""
+        
+        if let name = name {
+            stuff += "Name: \(name)\n"
+        }
+        if let media = media {
+            stuff += "Media: \(media)\n"
+        }
+        if let language = language {
+            stuff += "Language: \(language)\n"
+        }
+        if let artist = artist {
+            stuff += "Artist: \(artist)\n"
+        }
+        if let description = description {
+            stuff += "Description: \(description)\n"
+        }
+        
+        return stuff
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case name = "trackName"
+        case media = "kind"
+        case language = "lang"
+        case artist = "artistName"
+        case description = "shortDescription"
+        case coverImageURL = "artworkUrl100"
+        
+    }
+    
+    enum AdditionalKeys: String, CodingKey {
+        case longDescription // = "longDescription"
+    }
+
+    init(from decoder: Decoder) throws {
+        let valueContainer = try decoder.container(keyedBy: CodingKeys.self)
+        self.name = try? valueContainer.decode(String.self, forKey: CodingKeys.name)
+        self.media = try? valueContainer.decode(String.self, forKey: CodingKeys.media)
+        self.language = try? valueContainer.decode(String.self, forKey: CodingKeys.language)
+        self.artist = try? valueContainer.decode(String.self, forKey: CodingKeys.artist)
+        if let description = try? valueContainer.decode(String.self, forKey: CodingKeys.description) {
+            self.description = description
+        } else {
+            let additionalValues = try decoder.container(keyedBy: AdditionalKeys.self)
+            description = (try? additionalValues.decode(String.self, forKey: AdditionalKeys.longDescription))
+        }
+        self.coverImageURL = try valueContainer.decode(String.self, forKey: CodingKeys.coverImageURL)
+    }
+}
+
+func fetchItems(matching query: [String : String], completion: @escaping ([StoreItem]?) -> Void) {
+    
+    let baseURL = URL(string: "https://itunes.apple.com/search?")!
+    guard let searchURL = baseURL.withQueries(query) else {
+        completion(nil)
+        print("Unable to generate URL with queries")
+        return
+    }
+    
+    URLSession.shared.dataTask(with: searchURL) { (data, response, error) in
+        let decoder = JSONDecoder()
+        
+        if let data = data {
+            
+            if let stuff: StoreItems = try? decoder.decode(StoreItems.self, from: data) {
+                completion(stuff.results)
+            } else {
+                print("Unable to decode StoreItems")
+                completion(nil)
+                return
+            }
+            
+        } else {
+            print("No data recieved")
+            print(error as Any)
+            completion(nil)
+            return
+        }
+        
+        }.resume()
+}
 
 let query: [String: String] = [
-    "term": "Inside Out 2015",
-    "media": "movie",
-    "lang": "en_us",
-    "limit": "10"
+    "term" : "shrek",
+    "media" : "movie",
+    "lang" : "en_us",
+    "limit" : "5"
 ]
 
-let searchURL = baseURL.withQueries(query)!
-
-URLSession.shared.dataTask(with: searchURL) { (data, response, error) in
-    
-    if let data = data,
-        let string = String(data: data, encoding: .utf8) {
-        
-        print(string)
-        PlaygroundPage.current.finishExecution()
+fetchItems(matching: query) { (results) in
+    if let results = results {
+        for result in results {
+            print(result.printDescription)
+        }
     }
-}.resume()
-
+    PlaygroundPage.current.finishExecution()
+}
 /*:
  
  _Copyright © 2017 Apple Inc._

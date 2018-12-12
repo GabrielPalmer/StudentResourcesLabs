@@ -8,7 +8,7 @@ class StoreItemListTableViewController: UITableViewController {
     
     // add item controller property
     
-    var items = [String]()
+    var items: [StoreItem] = []
     
     let queryOptions = ["movie", "music", "software", "ebook"]
     
@@ -27,7 +27,21 @@ class StoreItemListTableViewController: UITableViewController {
         
         if !searchTerm.isEmpty {
             
-            // set up query dictionary
+            let query: [String : String] = [
+                "term" : searchTerm,
+                "media" : mediaType,
+                "lang" : "en_us",
+                "limit" : "5"
+            ]
+            
+            StoreItemController.fetchItems(matching: query) { (results) in
+                if let results = results {
+                    DispatchQueue.main.sync {
+                        self.items = results
+                        self.tableView.reloadData()
+                    }
+                }
+            }
             
             // use the item controller to fetch items
             // if successful, use the main queue to set self.items and reload the table view
@@ -39,11 +53,19 @@ class StoreItemListTableViewController: UITableViewController {
         
         let item = items[indexPath.row]
         
-        cell.textLabel?.text = item
+        cell.textLabel?.text = item.name
+        cell.detailTextLabel?.text = item.artist
+        cell.imageView?.image = UIImage(named: "gray")
         
-        // set label to the item's name
-        // set detail label to the item's subtitle
-        // reset the image view to the gray image
+        URLSession.shared.dataTask(with: URL(string: item.coverImageURL)!) { (data, response, error) in
+            if let data = data, let image = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    cell.imageView?.image = image
+                }
+            } else {
+                print("Failed to retrieve image")
+            }
+        }.resume()
         
         // initialize a network task to fetch the item's artwork
         // if successful, use the main queue capture the cell, to initialize a UIImage, and set the cell's image view's image to the 
@@ -55,7 +77,9 @@ class StoreItemListTableViewController: UITableViewController {
         fetchMatchingItems()
     }
     
+    //========================================
     // MARK: - Table view data source
+    //========================================
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
@@ -64,19 +88,25 @@ class StoreItemListTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "itemCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "resultCell", for: indexPath)
         configure(cell: cell, forItemAt: indexPath)
 
         return cell
     }
     
+    //========================================
     // MARK: - Table view delegate
+    //========================================
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }
+
+//========================================
+// MARK: - Extensions
+//========================================
 
 extension StoreItemListTableViewController: UISearchBarDelegate {
 
